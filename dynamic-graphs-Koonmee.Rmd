@@ -1,0 +1,139 @@
+---
+title: "dynamic-graphs-Koonmee"
+author: "Nat Koonmee"
+date: "2022-9-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(include = FALSE)
+
+library("readxl")
+library(dplyr)
+library(ggpubr)
+library(tidyverse)
+library(ggplot2)
+library(gapminder)
+library(TSstudio)
+library(hrbrthemes)
+library(scales)
+library(lubridate)
+library(caret)
+library(plotly)
+```
+
+
+
+```{r}
+Daily = read.csv("Daily_foco_weather.csv")
+Hourly = read.csv("Hourly_foco_weather.csv")
+Daily$Date <- as.Date(Daily$Date, format = "%m/%d/%Y")
+# Daily$Date <- as.Date(format(df$Date, '%m/%d/%Y'), format = '%m/%d/%Y')
+colnames(Hourly)
+
+
+```
+
+
+
+
+```{r}
+df <- Daily[order(Daily$Date),]
+iL = length(df[,1])
+for (i in 1:iL){
+  if(is.na(df[i, 18])){
+    df[i, 18] = 0
+  }
+}
+```
+
+```{r}
+wnv <- plot_ly(df,
+        x = ~Date,
+        y = ~ReportCase,
+        name = "WNV report cases",
+        type = "scatter",
+        mode = 'lines')
+
+wnv
+```
+
+
+```{r}
+
+weather <- plot_ly(df,
+                   x = ~Date,
+                   y = ~df$"Temp..fahrenheit.",
+                   name = "Temperature in Fort Collins F",
+                   type = 'scatter',
+                   mode = 'lines') %>%
+                    layout(
+                     title = "Weather in Fort Collins 2003 - 2022",
+                     xaxis = list(title = "Date"),
+                     yaxis = list(title = "Temperature in Fahrenheit")
+                   ) %>% 
+        rangeslider() %>%
+        layout(hovermode = "x") %>%
+        layout(xaxis = list(
+          rangeselector = list(
+            buttons = list(
+            
+            list(
+              count = 6,
+              label = "6m",
+              step = "month",
+              stepmode = "todate"),
+            
+            list(
+              count = 1,
+              label = "1y",
+              step = "year",
+              stepmode = "todate"),
+                        list(
+              count = 2,
+              label = "2y",
+              step = "year",
+              stepmode = "todate"),
+                        list(
+              count = 3,
+              label = "3y",
+              step = "year",
+              stepmode = "todate"),
+            
+                        list(
+              count = 5,
+              label = "5y",
+              step = "year",
+              stepmode = "todate"),
+            
+                        list(
+              count = 10,
+              label = "10y",
+              step = "year",
+              stepmode = "todate"),
+            
+            
+            list(step = "all")
+            
+            )
+          )
+        ))
+
+weather
+```
+ 
+ 
+ 
+```{r, include = TRUE}
+p <- subplot(list(weather, wnv),
+             nrows = 2,
+             shareX = TRUE,
+             titleX = FALSE) %>%
+            rangeslider() %>%
+            layout(hovermode = "x")
+
+p
+```
+ 
+ 
